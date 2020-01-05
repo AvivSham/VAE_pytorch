@@ -63,7 +63,7 @@ class Model(nn.Module):
     @staticmethod
     def loss(x, recon, mu, logvar):
         # Binary cross entropy loss
-        BCE = F.binary_cross_entropy(recon, x.view(-1, 784), reduction='sum')
+        BCE = F.binary_cross_entropy(recon, x, reduction='sum')
         # KL Divergence loss
         KL = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
 
