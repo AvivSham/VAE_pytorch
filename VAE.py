@@ -52,13 +52,13 @@ class Model(nn.Module):
     #     pass
 
     def sample(self, sample_size: int = None):
-        sampled_x = torch.rand((sample_size, self.latent_dim))
+        sampled_x = torch.rand((sample_size, self.latent_dim)).to(self.device)
         recon_x = self.decoder(self.upsample(sampled_x).view(-1, 64, 7, 7))
         save_image(recon_x, "output.jpg")
 
     def z_sample(self, mu, logvar) -> torch.Tensor:
         std = torch.exp(0.5 * logvar)
-        eps = torch.rand_like(std)
+        eps = torch.rand_like(std).to(self.device)
         return mu + eps * std
 
     @staticmethod
