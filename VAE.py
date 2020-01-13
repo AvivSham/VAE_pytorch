@@ -64,11 +64,11 @@ class Model(nn.Module):
     @staticmethod
     def loss(x, recon, mu, logvar):
         # Binary cross entropy loss
-        BCE = F.binary_cross_entropy(recon, x, reduction='sum')
+        BCE = F.binary_cross_entropy(recon, x)
         # KL Divergence loss
-        KL = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
+        KL = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp(), axis=1)
 
-        return BCE + KL
+        return (BCE + KL) / x.size(0)
 
     def forward(self, x: torch.Tensor):
         x_latent = self.encoder(x).view(-1, 64*7*7)
