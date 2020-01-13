@@ -4,7 +4,7 @@
 import argparse
 import torch, torchvision
 from torchvision import transforms
-from torchvision.utils import save_image, make_grid
+
 import numpy as np
 import VAE
 import pickle
@@ -41,11 +41,10 @@ def test(vae: VAE.Model, testloader, device: torch.device):
 
 def main(args):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    transform  = transforms.Compose([
+    transform = transforms.Compose([
         transforms.ToTensor(),
         transforms.Lambda(lambda x: x + torch.zeros_like(x).uniform_(0., 1./256.)), #dequantization
         transforms.Normalize((0.,), (257./256.,)), #rescales to [0,1]
-
     ])
 
     if args.dataset == 'mnist':
@@ -83,8 +82,7 @@ def main(args):
                                        epoch=epoch, device=device)
         elbo_train.append(train_loss)
         elbo_val.append(test(vae=vae, testloader=testloader,device=device))
-    save_image(make_grid(vae.sample(args.sample_size, mu=mu, logvar=logvar), "output.jpg"),
-               filename=filename)
+    vae.sample(args.sample_size)
     print("running done")
 
 

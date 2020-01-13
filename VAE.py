@@ -4,11 +4,10 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
-
+from torchvision.utils import save_image, make_grid
 
 class Model(nn.Module):
-    def __init__(self, latent_dim,device):
+    def __init__(self, latent_dim, device):
         """Initialize a VAE.
 
         Args:
@@ -39,23 +38,25 @@ class Model(nn.Module):
             nn.Sigmoid()
         )
 
-    def sample(self,sample_size=None, mu=None, logvar=None):
-        """
-        :param sample_size: Number of samples
-        :param mu: z mean, None for init with zeros
-        :param logvar: z logstd, None for init with zeros
-        :return:
-        """
-        if mu==None:
-            mu = torch.zeros((sample_size,self.latent_dim)).to(self.device)
-        if logvar == None:
-            logvar = torch.zeros((sample_size,self.latent_dim)).to(self.device)
-            sample_img = torch.randn(sample_size,self.latent_dim) * logvar + mu
-            sample_img = self.decoder(self.upsample(sample_img)).cpu()
-        return sample_img
+    # def sample(self, sample_size: int = None, mu=None, logvar=None) -> torch.Tensor:
+    #     """
+    #     :param sample_size: Number of samples
+    #     :param mu: z mean, None for init with zeros
+    #     :param logvar: z logstd, None for init with zeros
+    #     :return:
+    #     """
+    #     if mu==None:
+    #         mu = torch.zeros((sample_size, self.latent_dim)).to(self.device)
+    #     if logvar == None:
+    #         logvar = torch.zeros((sample_size, self.latent_dim)).to(self.device)
+    #     pass
 
+    def sample(self, sample_size: int = None):
+        sampled_x = torch.rand((sample_size, self.latent_dim))
+        recon_x = self.decoder(self.upsample(sampled_x).view(-1, 64, 7, 7))
+        save_image(recon_x, "output.jpg")
 
-    def z_sample(self, mu, logvar):
+    def z_sample(self, mu, logvar) -> torch.Tensor:
         std = torch.exp(0.5 * logvar)
         eps = torch.rand_like(std)
         return mu + eps * std
@@ -69,8 +70,8 @@ class Model(nn.Module):
 
         return BCE + KL
 
-    def forward(self, x):
-        x_latent = self.encoder(x).view(-1,64*7*7)
+    def forward(self, x: torch.Tensor):
+        x_latent = self.encoder(x).view(-1, 64*7*7)
         mu, logvar = self.mu(x_latent), self.logvar(x_latent)
         z = self.z_sample(mu=mu, logvar=logvar)
-        return self.decoder(self.upsample(z).view(-1,64,7,7)), mu, logvar
+        return self.decoder(self.upsample(z).view(-1, 64, 7, 7)), mu, logvar
