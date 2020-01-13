@@ -66,9 +66,9 @@ class Model(nn.Module):
         # Binary cross entropy loss
         BCE = F.binary_cross_entropy(recon, x)
         # KL Divergence loss
-        KL = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp(), axis=1)
+        KL = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
 
-        return (BCE + KL) / x.size(0)
+        return BCE + KL
 
     def forward(self, x: torch.Tensor):
         x_latent = self.encoder(x).view(-1, 64*7*7)
