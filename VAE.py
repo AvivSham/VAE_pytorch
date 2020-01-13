@@ -4,7 +4,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torchvision.utils import save_image, make_grid
+from torchvision.utils import save_image
 
 class Model(nn.Module):
     def __init__(self, latent_dim, device):
@@ -64,7 +64,7 @@ class Model(nn.Module):
     @staticmethod
     def loss(x, recon, mu, logvar):
         # Binary cross entropy loss
-        BCE = F.binary_cross_entropy(recon, x)
+        BCE = F.binary_cross_entropy(recon, x, reduction='sum')
         # KL Divergence loss
         KL = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
 

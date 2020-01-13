@@ -19,7 +19,7 @@ def train(vae : VAE.Model, trainloader, optimizer, epoch, device):
         inputs = inputs.to(device)
         optimizer.zero_grad()
         x_recon, mu, logvar = vae(inputs)
-        loss = vae.loss(inputs.view(-1,784), x_recon.view(-1,784), mu=mu, logvar=logvar)
+        loss = vae.loss(inputs, x_recon, mu=mu, logvar=logvar)
         loss.backward()
         batch_loss += loss.item()
         optimizer.step()
@@ -51,20 +51,20 @@ def main(args):
         trainset = torchvision.datasets.MNIST(root='./data/MNIST',
             train=True, download=True, transform=transform)
         trainloader = torch.utils.data.DataLoader(trainset,
-            batch_size=args.batch_size, shuffle=True, num_workers=4)
+            batch_size=args.batch_size, shuffle=True, num_workers=0)
         testset = torchvision.datasets.MNIST(root='./data/MNIST',
             train=False, download=True, transform=transform)
         testloader = torch.utils.data.DataLoader(testset,
-            batch_size=args.batch_size, shuffle=False, num_workers=4)
+            batch_size=args.batch_size, shuffle=False, num_workers=0)
     elif args.dataset == 'fashion-mnist':
         trainset = torchvision.datasets.FashionMNIST(root='./data/FashionMNIST',
             train=True, download=True, transform=transform)
         trainloader = torch.utils.data.DataLoader(trainset,
-            batch_size=args.batch_size, shuffle=True, num_workers=4)
+            batch_size=args.batch_size, shuffle=True, num_workers=0)
         testset = torchvision.datasets.FashionMNIST(root='./data/FashionMNIST',
             train=False, download=True, transform=transform)
         testloader = torch.utils.data.DataLoader(testset,
-            batch_size=args.batch_size, shuffle=False, num_workers=4)
+            batch_size=args.batch_size, shuffle=False, num_workers=0)
     else:
         raise ValueError('Dataset not implemented')
 
@@ -73,8 +73,7 @@ def main(args):
              + 'mid%d_' % args.latent_dim
 
     vae = VAE.Model(latent_dim=args.latent_dim,device=device).to(device)
-    optimizer = torch.optim.Adam(
-        vae.parameters(), lr=args.lr)
+    optimizer = torch.optim.Adam(vae.parameters(), lr=args.lr)
 
     elbo_train, elbo_val = [], []
     for epoch in range(args.epochs):
@@ -99,7 +98,7 @@ if __name__ == '__main__':
     parser.add_argument('--epochs',
                         help='maximum number of iterations.',
                         type=int,
-                        default=50)
+                        default=1)
     parser.add_argument('--sample_size',
                         help='number of images to generate.',
                         type=int,
