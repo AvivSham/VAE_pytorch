@@ -8,6 +8,8 @@ from torchvision import transforms
 import numpy as np
 import VAE
 import pickle
+import matplotlib.pyplot as plt
+import os
 
 N = 100
 
@@ -82,6 +84,15 @@ def main(args):
         elbo_train.append(train_loss)
         elbo_val.append(test(vae=vae, testloader=testloader,device=device))
     vae.sample(args.sample_size)
+    fig, ax = plt.subplots()
+    ax.plot(elbo_train)
+    ax.plot(elbo_val)
+    ax.set_title("Train/Test LL Loss")
+    ax.set_xlabel("Epoch")
+    ax.set_ylabel("Loss")
+    ax.legend(["train loss","test loss"])
+    # ax.legend(["train loss"])
+    plt.savefig(os.path.join(os.getcwd(),"loss",f"{args.dataset}_loss.png"))
     print("running done")
 
 

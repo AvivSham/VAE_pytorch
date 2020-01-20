@@ -52,9 +52,10 @@ class Model(nn.Module):
     #     pass
 
     def sample(self, sample_size: int = None):
-        sampled_x = torch.rand((sample_size, self.latent_dim)).to(self.device)
-        recon_x = self.decoder(self.upsample(sampled_x).view(-1, 64, 7, 7))
-        save_image(recon_x, "output.jpg")
+        with torch.no_grad():
+            sampled_x = torch.rand((sample_size, self.latent_dim)).to(self.device)
+            recon_x = self.decoder(self.upsample(sampled_x).view(-1, 64, 7, 7))
+            save_image(recon_x, "output.jpg")
 
     def z_sample(self, mu, logvar) -> torch.Tensor:
         std = torch.exp(0.5 * logvar)
@@ -68,7 +69,7 @@ class Model(nn.Module):
         # KL Divergence loss
         KL = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
 
-        return BCE + KL
+        return BCE + 3*KL
 
     def forward(self, x: torch.Tensor):
         x_latent = self.encoder(x).view(-1, 64*7*7)
