@@ -25,7 +25,7 @@ def train(vae : VAE.Model, trainloader, optimizer, epoch, device):
         loss.backward()
         batch_loss += loss.item()
         optimizer.step()
-    return batch_loss / len(trainloader), mu, logvar
+    return batch_loss, mu, logvar
 
 
 def test(vae: VAE.Model, testloader, device: torch.device):
@@ -37,7 +37,7 @@ def test(vae: VAE.Model, testloader, device: torch.device):
             x_recon, mu, logvar = vae(inputs)
             loss = vae.loss(inputs, x_recon, mu=mu, logvar=logvar)
             batch_loss += loss.item()
-        return batch_loss / len(testloader)
+        return batch_loss
 
 
 
@@ -81,16 +81,16 @@ def main(args):
     for epoch in range(args.epochs):
         train_loss, mu, logvar = train(vae=vae, trainloader=trainloader, optimizer=optimizer,
                                        epoch=epoch, device=device)
-        elbo_train.append(train_loss)
-        elbo_val.append(test(vae=vae, testloader=testloader,device=device))
+        elbo_train.append(train_loss / len(trainloader.dataset))
+        elbo_val.append(test(vae=vae, testloader=testloader,device=device) / len(testloader.dataset))
     vae.sample(args.sample_size)
     fig, ax = plt.subplots()
     ax.plot(elbo_train)
     ax.plot(elbo_val)
-    ax.set_title("Train/Test LL Loss")
+    ax.set_title("Train/Test ELBO")
     ax.set_xlabel("Epoch")
-    ax.set_ylabel("Loss")
-    ax.legend(["train loss","test loss"])
+    ax.set_ylabel("ELBO")
+    ax.legend(["train ELBO","test ELBO"])
     # ax.legend(["train loss"])
     plt.savefig(os.path.join(os.getcwd(),"loss",f"{args.dataset}_loss.png"))
     print("running done")
